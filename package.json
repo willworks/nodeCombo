@@ -1,0 +1,19 @@
+{
+  "name": "nodeCombo",
+  "version": "1.0.0",
+  "description": "combo for node",
+  "main": "index.js",
+  "scripts": {
+    "test": "npm test"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git@github.com:willworks/nodeCombo.git"
+  },
+  "keywords": [
+    "combo",
+    "node"
+  ],
+  "author": "kevin.zhong",
+  "license": "MIT"
+}
