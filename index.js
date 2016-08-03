@@ -36,16 +36,30 @@ HTTP = {
 	init : function () {
 		this.createServer();
 	},
+
 	responseFile : function (pathName, request, response) {
-		UTIL.log(pathName);
-		// TODO fs async
-		response.end();
+		let assetsArr = request.url.split('??')[1].split(',');
+		let resData = '';
+		for (let i in assetsArr) {
+			UTIL.log(assetsArr[i]);
+			// 异步读取
+			fs.readFile(assetsArr[i], function (err, data) {
+				if (err) {
+					return UTIL.log(err);
+				}
+				resData=+data.toString();
+				console.log("异步读取: " + data.toString());
+			});
+		}
+		response.end(resData);
 	},
+
 	createServer : function () {
 		let server = http.createServer();
 		server.listen(CONFIG.port!==0 ? CONFIG.port : 0);
 		this.bindEvents(server);
 	},
+
 	bindEvents:function (server){
 		let self = this;
 
@@ -58,7 +72,12 @@ HTTP = {
 		// 注册请求处理事件
 		server.on('request', function (request, response) {
 			let pathName = url.parse(request.url).pathname.slice(1);
-			self.responseFile(pathName, request, response);
+			if (pathName == 'favicon.ico') {
+				// 阻止浏览器的默认favicon请求
+				return;
+			} else {
+				self.responseFile(pathName, request, response);
+			}
 		});
 	}
 };
