@@ -21,7 +21,7 @@ let HTTP = {};
 let UTIL = {};
 
 CONFIG = {
-  home: 'index.html',
+  home: 'index.js',
   assets: './assets/',
   port: 9876
 };
@@ -37,21 +37,44 @@ HTTP = {
 		this.createServer();
 	},
 
+	setResHeader: function (response) {
+		response.setHeader('Content-Type', 'text/js');
+		response.writeHead(200, {'Content-Type': 'text/js'});
+	},
+	
+	readFileAsyncPromise : function (filePos) {
+		return new Promise(function (resolve, reject) {
+			// 异步读取
+			fs.readFile(filePos, function (err, data) {
+				if (err) {
+					reject(err);
+				} else {
+					resolve(data);
+				}
+			});
+		});
+	},
+
 	responseFile : function (pathName, request, response) {
+		let that = this;
 		let assetsArr = request.url.split('??')[1].split(',');
 		let resData = '';
 		for (let i in assetsArr) {
 			UTIL.log(assetsArr[i]);
-			// 异步读取
-			fs.readFile(assetsArr[i], function (err, data) {
-				if (err) {
-					return UTIL.log(err);
-				}
-				resData=+data.toString();
-				console.log("异步读取: " + data.toString());
-			});
+			this.readFileAsyncPromise(CONFIG.assets + 'seajs/' + assetsArr[i])
+				.then(function (data) {
+					UTIL.log(data.toString());
+					resData += data.toString();
+					// 最终全部返回结果
+					if (i == assetsArr.length-1) {
+						that.setResHeader(response);
+						response.end(resData);
+					}
+				})
+				.catch(function (err) {
+					UTIL.log(err.toString());
+				});
 		}
-		response.end(resData);
 	},
 
 	createServer : function () {
